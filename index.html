@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+	
+	<link rel="stylesheet" type="text/css" href="style.css">
+	
+	<script>
+	$(document).ready(function()
+	{
+		//We'll eventually want to make this an 8x8 game
+		var $maxBoardWidth = 4, $maxBoardHeight = 4;
+		var $playerSelected = "", $foxPlaced = "False", $hound1Placed = "False", $hound2Placed = "False", $hound3Placed = "False";
+		var $fox_x, $fox_y, $hound1_x, $hound1_y, $hound2_x, $hound2_y, $hound3_x, $hound3_y;
+	
+		//-------------------
+		// Set up board
+		//-------------------
+		function setUpBoard(){
+			for(var $x=0;$x < $maxBoardWidth;$x++){
+				for(var $y=0;$y < $maxBoardHeight;$y++){
+					$("#board").append("<button class='tile' id =tileX" + $x + "Y" + $y + ">");
+					$("#tileX" + $x + "Y" + $y).data("xCoord",$x);
+					$("#tileX" + $x + "Y" + $y).data("yCoord",$y);
+					
+					xvalue = $("#tileX" + $x + "Y" + $y).data("xCoord");
+					yvalue = $("#tileX" + $x + "Y" + $y).data("yCoord");
+					
+					console.log("x: " + xvalue + ",y: " + yvalue);
+				}
+				$("#board").append("<br>");
+			}
+		
+			//Verify that the ids of the tiles are working correctly
+			/*$('.tile').each(function() {
+				id = $(this).attr('id');
+				console.log(id);
+			});*/
+		};
+		
+		setUpBoard();
+		
+		//--------------------------
+		// Select player to place
+		//--------------------------
+		
+		$("#foxButton").click(function(){
+			placePlayer($(this).attr('id'));
+		});
+		
+		$(".houndButton").each(function(index){
+			$(this).click(function(){
+				placePlayer($(this).attr('id'));
+			})
+		});
+		
+		function placePlayer(playerID){
+			$playerSelected = playerID;
+			//console.log(playerID);
+		};
+		
+		//------------------
+		// Play the game
+		//------------------
+		$(".tile").each(function(index){
+			$(this).click(function(){
+			
+				//
+				console.log($(this).attr('id'));
+				xValue = $(this).data("xCoord");
+				yValue = $(this).data("yCoord");
+				console.log("x: " + xValue + ", y: " + yValue);
+				//
+				
+				// Set up the players
+				if($foxPlaced == "False" || $hound1Placed == "False" || $hound2Placed == "False" || $hound3Placed == "False")
+				{
+					if($playerSelected == "foxButton" && $foxPlaced == "False")
+					{
+						$(this).css("background-color","Red");
+						$foxPlaced = "True";
+					}
+					if($playerSelected == "houndButton1" && $hound1Placed == "False")
+					{
+						$(this).css("background-color","Blue");
+						$hound1Placed = "True";
+					}
+					if($playerSelected == "houndButton2" && $hound2Placed == "False")
+					{
+						$(this).css("background-color","Blue");
+						$hound2Placed = "True";
+					}
+					if($playerSelected == "houndButton3" && $hound3Placed == "False")
+					{
+						$(this).css("background-color","Blue");
+						$hound3Placed = "True";
+					}
+				}
+				// Play the game
+				else{
+						console.log("Play the game.");
+				}
+				
+			});
+		});
+		
+	});
+	
+	</script>
+</head>
+<body>
+<div class="container">
+
+	<div id="buttonArea">
+		<input type='submit' id="foxButton" value="Fox" class="foxButton">
+		<input type='submit' id="houndButton1" value="Hound1" class="houndButton">
+		<input type='submit' id="houndButton2" value="Hound2" class="houndButton">
+		<input type='submit' id="houndButton3" value="Hound3" class="houndButton">
+	</div>
+		
+	<center>	
+		<div id="board">
+		</div>
+	</center>
+		
+</div>
+</body>
+</html>

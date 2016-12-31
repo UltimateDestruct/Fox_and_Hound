@@ -1,0 +1,15 @@
+button{
+	height: 30px;
+	width: 30px;
+	margin: 1px;
+}
+
+.foxButton{
+	background-color: Red;
+	color: White;
+}
+
+.houndButton{
+	background-color: Blue;
+	color: White;
+}
