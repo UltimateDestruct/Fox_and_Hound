@@ -1,0 +1,5 @@
+1. When setting the players, one player can overwrite another. 
+- Reproduction steps: If I place the fox on (0,0), then I place a hound on (0,0), the fox is covered up by the hound.
+- Expected result: The program should not allow you to place one player on top of another
+- Actual result: The 2nd player covers up the first if they are placed on the same tile.
+===============================
