@@ -13,3 +13,8 @@ button{
 	background-color: Blue;
 	color: White;
 }
+
+.potentialMove{
+	background-color: Yellow;
+	color: Black;
+}
