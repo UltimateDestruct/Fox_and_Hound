@@ -2,4 +2,4 @@
 - Show potential fox moves: highlight tiles that can be moved to.
 - Add counter that shows how many moves the fox has evaded the hounds.
 - Add some AI so that the hounds try to trap the fox.
-- Add the ability for the fox to move by clicking on an available tile.
+- Split the javascript code into manageable chunks and move those chunks into separate .js files that can be called externally from the .html file.
