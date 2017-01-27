@@ -17,6 +17,7 @@
 		var $playerSelected = "", $foxPlaced = "False", $hound1Placed = "False", $hound2Placed = "False", $hound3Placed = "False";
 		var $fox_x, $fox_y, $hound1_x, $hound1_y, $hound2_x, $hound2_y, $hound3_x, $hound3_y;
 		var $user_clicked_x, $user_clicked_y;
+		var $hound1Role="",$hound2Role="",$hound3Role="";
 		var $strategy="";
 	
 		//-------------------
@@ -70,8 +71,8 @@
 				//
 				$user_clicked_x = $(this).data("xCoord");
 				$user_clicked_y = $(this).data("yCoord");
-				console.log($(this).attr('id'));
-				console.log("x: " + $user_clicked_x + ", y: " + $user_clicked_y);
+				//console.log($(this).attr('id'));
+				//console.log("x: " + $user_clicked_x + ", y: " + $user_clicked_y);
 				//
 				
 				// Set up the players
@@ -114,7 +115,27 @@
 				else{
 						checkForFoxValidMoves();
 						developStrategy();
-						assignRoles();
+						
+						//Need to determine if a hound is touching the fox before the hound moves
+						determineTouchingTrappers($fox_x+1,$fox_y,"LeftTrapper");
+						determineTouchingTrappers($fox_x-1,$fox_y,"RightTrapper");
+						determineTouchingTrappers($fox_x,$fox_y+1,"TopTrapper");
+						determineTouchingTrappers($fox_x,$fox_y-1,"BottomTrapper");
+						
+						decideHoundTile(1,$hound1Role);
+						
+						//Need to determine if a hound is touching the fox after the hound moves
+						determineTouchingTrappers($fox_x+1,$fox_y,"LeftTrapper");
+						determineTouchingTrappers($fox_x-1,$fox_y,"RightTrapper");
+						determineTouchingTrappers($fox_x,$fox_y+1,"TopTrapper");
+						determineTouchingTrappers($fox_x,$fox_y-1,"BottomTrapper");
+						
+						checkForFoxValidMoves();
+						
+						console.log("Hound1 Role:" + $hound1Role + "," + "Hound2 Role:" + $hound2Role + "," + "Hound3 Role:" + $hound3Role);
+						console.log("Hound1:" + $hound1_x + "," + $hound1_y);
+						console.log("Hound2:" + $hound2_x + "," + $hound2_y);
+						console.log("Hound3:" + $hound3_x + "," + $hound3_y);
 				}
 				
 			});
@@ -157,6 +178,14 @@
 				//console.log("Can move down");
 				moveFox("Down");
 			}
+			//If the fox is blocked on all sides then the game is overflow
+			if(($fox_x-1<0 || ($fox_x-1 == $hound1_x && $fox_y == $hound1_y) || ($fox_x-1 == $hound2_x && $fox_y == $hound2_y) || ($fox_x-1 == $hound3_x && $fox_y == $hound3_y)) && //left side
+			($fox_x+1>=($maxBoardWidth) || ($fox_x+1 == $hound1_x && $fox_y == $hound1_y) || ($fox_x+1 == $hound2_x && $fox_y == $hound2_y) || ($fox_x+1 == $hound3_x && $fox_y == $hound3_y)) && //right side
+			($fox_y-1<0 || ($fox_x == $hound1_x && $fox_y-1 == $hound1_y) || ($fox_x == $hound2_x && $fox_y-1 == $hound2_y) || ($fox_x == $hound3_x && $fox_y-1 == $hound3_y)) && //top side
+			($fox_y+1>=($maxBoardHeight) || ($fox_x == $hound1_x && $fox_y+1 == $hound1_y) || ($fox_x == $hound2_x && $fox_y+1 == $hound2_y) || ($fox_x == $hound3_x && $fox_y+1 == $hound3_y))) //bottom side
+			{
+				alert("game over");
+			}
 		};
 		
 		function moveFox(direction){
@@ -182,16 +211,20 @@
 		
 		function moveFoxToDifferentTile(ParamX,ParamY){
 			if($user_clicked_x == ParamX && $user_clicked_y == ParamY)
-				{
-					//Remove red from the current tile
-					$("#tileX" + $fox_x + "Y" + $fox_y).removeClass("foxButton");
-				
-					//Move fox location and apply red to new tile
-					$fox_x = $user_clicked_x;
-					$fox_y = $user_clicked_y;
-					$("#tileX" + $fox_x + "Y" + $fox_y).addClass("foxButton");
-				}
+			{
+				//Remove red from the current tile
+				$("#tileX" + $fox_x + "Y" + $fox_y).removeClass("foxButton");
+			
+				//Move fox location and apply red to new tile
+				$fox_x = $user_clicked_x;
+				$fox_y = $user_clicked_y;
+				$("#tileX" + $fox_x + "Y" + $fox_y).addClass("foxButton");
+			}
 		};
+		
+		//----------------------------------
+		// Develop Strategy
+		//----------------------------------
 		
 		function developStrategy(){
 			//Determine which edge the fox is closest to
@@ -224,793 +257,157 @@
 				$strategy = "TrapRight";
 				$shortestDistanceToEdge = $distanceToEdge;
 			}
+			console.log("-------------------");
 			console.log($strategy);
+			console.log("-------------------");
 		};
 		
-		//-------------------------------
-		// Assign Roles
-		//-------------------------------
+		//--------------------------------
+		// Determine Touching Trappers
+		//--------------------------------
+		function determineTouchingTrappers(ParamX,ParamY,trapperType){
+			if($hound1_x == ParamX && $hound1_y == ParamY)
+			{
+				$hound1Role = trapperType;
+				
+				switch ($hound1Role){
+				case "LeftTrapper":
+					$leftTrapperAssigned = "True";
+					console.log("Left trapper assigned!");
+					break;
+				case "RightTrapper":
+					$rightTrapperAssigned = "True";
+					console.log("Right trapper assigned!");
+					break;
+				case "TopTrapper":
+					$topTrapperAssigned = "True";
+					console.log("Top trapper assigned!");
+					break;
+				case "BottomTrapper":
+					$bottomTrapperAssigned = "True";
+					console.log("Bottom trapper assigned!");
+					break;
+				default:
+					break;
+				}
+			}
+		};
 		
-		function assignRoles(){
-			var $closestHoriz="",$closestVert="";
-			var $hound1Role="",$hound2Role="",$hound3Role="";
-			var $leftTrapperAssigned="False", $rightTrapperAssigned="False", $topTrapperAssigned="False", $bottomTrapperAssigned="False", $houndsAssignedRoles=0;
+	//----------------------------------
+	// Check Hound Move Availability
+	//----------------------------------
+	function checkHoundMoveAvailability(HoundNum, ParamX, ParamY)
+	{
+		if(HoundNum==1)
+		{
+			//Check if the hound is within range to move to the new square
 			
-			function determineTouchingTrappers(ParamX,ParamY,trapperType){
-				if($hound1_x == ParamX && $hound1_y == ParamY)
-				{
-					$hound1Role = trapperType;
-					
-					switch ($hound1Role){
-					case "LeftTrapper":
-						$leftTrapperAssigned = "True";
-						console.log("Left trapper assigned!");
-						break;
-					case "RightTrapper":
-						$rightTrapperAssigned = "True";
-						console.log("Right trapper assigned!");
-						break;
-					case "TopTrapper":
-						$topTrapperAssigned = "True";
-						console.log("Top trapper assigned!");
-						break;
-					case "BottomTrapper":
-						$bottomTrapperAssigned = "True";
-						console.log("Bottom trapper assigned!");
-						break;
-					default:
-						break;
-					}
-					$houndsAssignedRoles++;
-				}
-				else if($hound2_x == ParamX && $hound2_y == ParamY)
-				{
-					$hound2Role = trapperType;
-					
-					switch ($hound2Role){
-					case "LeftTrapper":
-						$leftTrapperAssigned = "True";
-						console.log("Left trapper assigned!");
-						break;
-					case "RightTrapper":
-						$rightTrapperAssigned = "True";
-						console.log("Right trapper assigned!");
-						break;
-					case "TopTrapper":
-						$topTrapperAssigned = "True";
-						console.log("Top trapper assigned!");
-						break;
-					case "BottomTrapper":
-						$bottomTrapperAssigned = "True";
-						console.log("Bottom trapper assigned!");
-						break;
-					default:
-						break;
-					}
-					$houndsAssignedRoles++;
-				}
-				else if($hound3_x == ParamX && $hound3_y == ParamY)
-				{
-					$hound3Role = trapperType;
-				
-					switch (trapperType){
-						case "LeftTrapper":
-							$leftTrapperAssigned = "True";
-							break;
-						case "RightTrapper":
-							$rightTrapperAssigned = "True";
-							break;
-						case "TopTrapper":
-							$topTrapperAssigned = "True";
-							break;
-						case "BottomTrapper":
-							$bottomTrapperAssigned = "True";
-							break;
-						default:
-							break;
-					}
-					$houndsAssignedRoles++;
-				}
-				
-			};
-			
-			//Determine if a hound is touching the fox on a side. If so, they stay on that side of the fox.
-			determineTouchingTrappers($fox_x+1,$fox_y,"RightTrapper");
-			determineTouchingTrappers($fox_x-1,$fox_y,"LeftTrapper");
-			determineTouchingTrappers($fox_x,$fox_y+1,"BottomTrapper");
-			determineTouchingTrappers($fox_x,$fox_y-1,"TopTrapper");
-			
-			
-			//The function takes a hound number and an order (1,2,3 for 1st,2nd,3rd) and returns true or false
-			//So if Hound1 is the closest horizontally: closestHorizOrder(1,1) == True and closestHorizOrder(1,2) == False
-			//Ties go to the earlier hound in the list
-			function closestHorizOrder(hound,order){
-				$hound1HorizDistance = Math.abs($fox_x - $hound1_x);
-				$hound2HorizDistance = Math.abs($fox_x - $hound2_x);
-				$hound3HorizDistance = Math.abs($fox_x - $hound3_x);
-				
-				var horizOrderNum=3;
-				
-				if(hound==1)
-				{
-					if($hound1HorizDistance <= $hound2HorizDistance)
-					{
-						horizOrderNum--;
-					}
-					if($hound1HorizDistance <= $hound3HorizDistance)
-					{
-						horizOrderNum--;
-					}
-				}
-				else if(hound==2)
-				{
-					if($hound2HorizDistance < $hound1HorizDistance)
-					{
-						horizOrderNum--;
-					}
-					if($hound2HorizDistance <= $hound3HorizDistance)
-					{
-						horizOrderNum--;
-					}
-				}
-				else if(hound==3)
-				{
-					if($hound3HorizDistance < $hound1HorizDistance)
-					{
-						horizOrderNum--;
-					}
-					if($hound3HorizDistance < $hound2HorizDistance)
-					{
-						horizOrderNum--;
-					}
-				}
-				
-				switch (order)
-				{
-					case 1:
-						if(horizOrderNum==1)
-						{
-							return "True";
-						}
-						else
-						{
-							return "False";
-						}
-						break;
-					case 2:
-						if(horizOrderNum==2)
-						{
-							return "True";
-						}
-						else
-						{
-							return "False";
-						}
-						break;
-					case 3:
-						if(horizOrderNum==3)
-						{
-							return "True";
-						}
-						else
-						{
-							return "False";
-						}
-						break;
-					default:
-						break;
-				};
-			};
-				
-			/*-----------------------------------
-			Closest Vertical Distance - like closest Horiz distance, but looking vertically instead
-			-----------------------------------*/
-			function closestVertOrder(hound,order){
-			$hound1VertDistance = Math.abs($fox_y - $hound1_y);
-			$hound2VertDistance = Math.abs($fox_y - $hound2_y);
-			$hound3VertDistance = Math.abs($fox_y - $hound3_y);
-			
-			var vertOrderNum=3;
-			
-			if(hound==1)
+			if((ParamX==$hound1_x || ParamX==$hound1_x+1 || ParamX==$hound1_x-1) && (ParamY==$hound1_y || ParamY==$hound1_y-1 || ParamY==$hound1_y+1))
 			{
-				if($hound1VertDistance <= $hound2VertDistance)
+				//Check that the hound will not move past the edges of the board
+				if((ParamX >= 0 && ParamX < $maxBoardWidth) && (ParamY >= 0 && ParamY < $maxBoardHeight))
 				{
-					vertOrderNum--;
-				}
-				if($hound1VertDistance <= $hound3VertDistance)
-				{
-					vertOrderNum--;
+					//Check that there are no other players occupying the tile
+					if((ParamX == $hound2_x && ParamY == $hound2_y)
+					|| (ParamX == $hound3_x && ParamY == $hound3_y)
+					|| (ParamX == $fox_x && ParamY == $fox_y))
+					{
+						return "False";
+					}
+					else
+					{
+						return "True";
+					}
 				}
 			}
-			else if(hound==2)
-			{
-				if($hound2VertDistance < $hound1VertDistance)
-				{
-					vertOrderNum--;
-				}
-				if($hound2VertDistance <= $hound3VertDistance)
-				{
-					vertOrderNum--;
-				}
-			}
-			else if(hound==3)
-			{
-				if($hound3VertDistance < $hound1VertDistance)
-				{
-					vertOrderNum--;
-				}
-				if($hound3VertDistance < $hound2VertDistance)
-				{
-					vertOrderNum--;
-				}
-			}
+		}
+	};
+	
+	//-------------------
+	// Move Hound
+	//-------------------
+	function moveHound(HoundNum,ParamX,ParamY){
+		var $houndLocationX, $houndLocationY;
+		
+		if(HoundNum==1)
+		{
+			$houndLocationX = $hound1_x;
+			$houndLocationY = $hound1_y;
 			
-			switch (order)
+			//Change location of Hound1
+			$hound1_x = ParamX;
+			$hound1_y = ParamY;
+			$hound1Role="";
+		}
+		
+		//Remove blue from the hound's current tile
+		$("#tileX" + $houndLocationX + "Y" + $houndLocationY).removeClass("houndButton");
+	
+		//Move hound location and apply blue to new tile
+		$("#tileX" + ParamX + "Y" + ParamY).addClass("houndButton");
+	};//MoveHound
+	
+	//--------------------------------------------
+		// Decide Hound Tile
+		//--------------------------------------------
+		function decideHoundTile(houndNumber,houndRole)
+		{
+			switch (houndNumber)
 			{
 				case 1:
-					if(vertOrderNum==1)
+					switch(houndRole)
 					{
-						return "True";
+						case "RightTrapper":
+							if(checkHoundMoveAvailability(1,$hound1_x+1,$hound1_y) == "True")
+							{
+								moveHound(1,$hound1_x+1,$hound1_y);
+							}
+							else
+							{
+								//console.log("Don't Move Hound1 Left");
+							}
+							break;
+						case "LeftTrapper":
+							if(checkHoundMoveAvailability(1,$hound1_x-1,$hound1_y) == "True")
+							{
+								moveHound(1,$hound1_x-1,$hound1_y);
+							}
+							else
+							{
+								//console.log("Don't Move Hound1 Right");
+							}
+							break;
+						case "BottomTrapper":
+							if(checkHoundMoveAvailability(1,$hound1_x,$hound1_y+1) == "True")
+							{
+								moveHound(1,$hound1_x,$hound1_y+1);
+							}
+							else
+							{
+								//console.log("Don't Move Hound1 Up");
+							}
+							break;
+						case "TopTrapper":
+							if(checkHoundMoveAvailability(1,$hound1_x,$hound1_y-1) == "True")
+							{
+								moveHound(1,$hound1_x,$hound1_y-1);
+							}
+							else
+							{
+								//console.log("Don't Move Hound1 Down");
+							}
+							break;
+						default:
+							console.log("No role assigned to Hound1");
+							break; 
 					}
-					else
-					{
-						return "False";
-					}
-					break;
-				case 2:
-					if(vertOrderNum==2)
-					{
-						return "True";
-					}
-					else
-					{
-						return "False";
-					}
-					break;
-				case 3:
-					if(vertOrderNum==3)
-					{
-						return "True";
-					}
-					else
-					{
-						return "False";
-					}
-					break;
 				default:
 					break;
 			}
-			
-		};//closest vert order
-		
-		//------------------------
-		// Fill roles
-		//------------------------
-		function fillRoles(strategy){
-			switch (strategy)
-			{
-				//Trap Top---------------------
-				case "TrapTop":
-					if($leftTrapperAssigned=="False")
-					{
-						//Check which hound is closest horizontally, then assign the role
-						hound1Check = closestHorizOrder(1,1);
-						hound2Check = closestHorizOrder(2,1);
-						hound3Check = closestHorizOrder(3,1);
-						
-						if(hound1Check=="True" && $hound1Role == "")
-						{
-							$hound1Role = "LeftTrapper";
-							$leftTrapperAssigned = "True";
-						}
-						else if(hound2Check=="True" && $hound2Role == "")
-						{
-							$hound2Role = "LeftTrapper";
-							$leftTrapperAssigned = "True";
-						}
-						else if(hound3Check=="True" && $hound3Role == "")
-						{
-							$hound3Role = "LeftTrapper";
-							$leftTrapperAssigned = "True";
-						}
-					}
-					
-					if($rightTrapperAssigned=="False")
-					{
-						//Check which hound is closest horizontally, then assign the role
-						hound1Check = closestHorizOrder(1,1);
-						hound2Check = closestHorizOrder(2,1);
-						hound3Check = closestHorizOrder(3,1);
-						
-						if(hound1Check=="True" && $hound1Role == "")
-						{
-							$hound1Role = "RightTrapper";
-							$rightTrapperAssigned = "True";
-						}
-						else if(hound2Check=="True" && $hound2Role == "")
-						{
-							$hound2Role = "RightTrapper";
-							$rightTrapperAssigned = "True";
-						}
-						else if(hound3Check=="True" && $hound3Role == "")
-						{
-							$hound3Role = "RightTrapper";
-							$rightTrapperAssigned = "True";
-						}
-					}
-					
-					if($bottomTrapperAssigned=="False")
-					{
-						//Check which hound is closest vertically, then assign the role
-						hound1Check = closestVertOrder(1,1);
-						hound2Check = closestVertOrder(2,1);
-						hound3Check = closestVertOrder(3,1);
-						
-						if(hound1Check=="True" && $hound1Role == "")
-						{
-							$hound1Role = "BottomTrapper";
-							$bottomTrapperAssigned = "True";
-						}
-						else if(hound2Check=="True" && $hound2Role == "")
-						{
-							$hound1Role = "BottomTrapper";
-							$bottomTrapperAssigned = "True";
-						}
-						else if(hound3Check=="True" && $hound3Role == "")
-						{
-							$hound1Role = "BottomTrapper";
-							$bottomTrapperAssigned = "True";
-						}
-					}
-					
-					//fill remaining roles	
-					if($houndsAssignedRoles < 3)
-					{
-						if($hound1Role=="")
-						{
-							if($leftTrapperAssigned=="False")
-							{
-								$hound1Role="LeftTrapper";
-							}
-							else if($rightTrapperAssigned=="False")
-							{
-								$hound1Role="RightTrapper";
-							}
-							else if($bottomTrapperAssigned=="False")
-							{
-								$hound1Role="BottomTrapper";
-							}
-						}
-						
-						if($hound2Role=="")
-						{
-							if($leftTrapperAssigned=="False")
-							{
-								$hound2Role="LeftTrapper";
-							}
-							else if($rightTrapperAssigned=="False")
-							{
-								$hound2Role="RightTrapper";
-							}
-							else if($bottomTrapperAssigned=="False")
-							{
-								$hound2Role="BottomTrapper";
-							}
-						}
-						
-						if($hound3Role=="")
-						{
-							if($leftTrapperAssigned=="False")
-							{
-								$hound3Role="LeftTrapper";
-							}
-							else if($rightTrapperAssigned=="False")
-							{
-								$hound3Role="RightTrapper";
-							}
-							else if($bottomTrapperAssigned=="False")
-							{
-								$hound3Role="BottomTrapper";
-							}
-						}
-					}	
-					break;
-					
-				//Trap Bottom---------------------	
-				case "TrapBottom":
-					if($leftTrapperAssigned=="False")
-					{
-						//Check which hound is closest horizontally, then assign the role
-						hound1Check = closestHorizOrder(1,1);
-						hound2Check = closestHorizOrder(2,1);
-						hound3Check = closestHorizOrder(3,1);
-						
-						if(hound1Check=="True" && $hound1Role == "")
-						{
-							$hound1Role = "LeftTrapper";
-							$leftTrapperAssigned = "True";
-						}
-						else if(hound2Check=="True" && $hound2Role == "")
-						{
-							$hound2Role = "LeftTrapper";
-							$leftTrapperAssigned = "True";
-						}
-						else if(hound3Check=="True" && $hound3Role == "")
-						{
-							$hound3Role = "LeftTrapper";
-							$leftTrapperAssigned = "True";
-						}
-					}
-					
-					if($rightTrapperAssigned=="False")
-					{
-						//Check which hound is closest horizontally, then assign the role
-						hound1Check = closestHorizOrder(1,1);
-						hound2Check = closestHorizOrder(2,1);
-						hound3Check = closestHorizOrder(3,1);
-						
-						if(hound1Check=="True" && $hound1Role == "")
-						{
-							$hound1Role = "RightTrapper";
-							$rightTrapperAssigned = "True";
-						}
-						else if(hound2Check=="True" && $hound2Role == "")
-						{
-							$hound2Role = "RightTrapper";
-							$rightTrapperAssigned = "True";
-						}
-						else if(hound3Check=="True" && $hound3Role == "")
-						{
-							$hound3Role = "RightTrapper";
-							$rightTrapperAssigned = "True";
-						}
-					}
-					
-					if($topTrapperAssigned=="False")
-					{
-						//Check which hound is closest vertically, then assign the role
-						hound1Check = closestVertOrder(1,1);
-						hound2Check = closestVertOrder(2,1);
-						hound3Check = closestVertOrder(3,1);
-						
-						if(hound1Check=="True" && $hound1Role == "")
-						{
-							$hound1Role = "TopTrapper";
-							$topTrapperAssigned = "True";
-						}
-						else if(hound2Check=="True" && $hound2Role == "")
-						{
-							$hound1Role = "TopTrapper";
-							$topTrapperAssigned = "True";
-						}
-						else if(hound3Check=="True" && $hound3Role == "")
-						{
-							$hound1Role = "TopTrapper";
-							$topTrapperAssigned = "True";
-						}
-					}
-					//fill remaining roles	
-					if($houndsAssignedRoles < 3)
-					{
-						if($hound1Role=="")
-						{
-							if($leftTrapperAssigned=="False")
-							{
-								$hound1Role="LeftTrapper";
-							}
-							else if($rightTrapperAssigned=="False")
-							{
-								$hound1Role="RightTrapper";
-							}
-							else if($topTrapperAssigned=="False")
-							{
-								$hound1Role="TopTrapper";
-							}
-						}
-						
-						if($hound2Role=="")
-						{
-							if($leftTrapperAssigned=="False")
-							{
-								$hound2Role="LeftTrapper";
-							}
-							else if($rightTrapperAssigned=="False")
-							{
-								$hound2Role="RightTrapper";
-							}
-							else if($topTrapperAssigned=="False")
-							{
-								$hound2Role="TopTrapper";
-							}
-						}
-						
-						if($hound3Role=="")
-						{
-							if($leftTrapperAssigned=="False")
-							{
-								$hound3Role="LeftTrapper";
-							}
-							else if($rightTrapperAssigned=="False")
-							{
-								$hound3Role="RightTrapper";
-							}
-							else if($topTrapperAssigned=="False")
-							{
-								$hound3Role="TopTrapper";
-							}
-						}
-					}
-					break;	
-				
-				//Trap Left---------------------	
-				case "TrapLeft":
-					if($bottomTrapperAssigned=="False")
-					{
-						//Check which hound is closest horizontally, then assign the role
-						hound1Check = closestHorizOrder(1,1);
-						hound2Check = closestHorizOrder(2,1);
-						hound3Check = closestHorizOrder(3,1);
-						
-						if(hound1Check=="True" && $hound1Role == "")
-						{
-							$hound1Role = "BottomTrapper";
-							$bottomTrapperAssigned = "True";
-						}
-						else if(hound2Check=="True" && $hound2Role == "")
-						{
-							$hound2Role = "BottomTrapper";
-							$bottomTrapperAssigned = "True";
-						}
-						else if(hound3Check=="True" && $hound3Role == "")
-						{
-							$hound3Role = "BottomTrapper";
-							$bottomTrapperAssigned = "True";
-						}
-					}
-					
-					if($rightTrapperAssigned=="False")
-					{
-						//Check which hound is closest horizontally, then assign the role
-						hound1Check = closestHorizOrder(1,1);
-						hound2Check = closestHorizOrder(2,1);
-						hound3Check = closestHorizOrder(3,1);
-						
-						if(hound1Check=="True" && $hound1Role == "")
-						{
-							$hound1Role = "RightTrapper";
-							$rightTrapperAssigned = "True";
-						}
-						else if(hound2Check=="True" && $hound2Role == "")
-						{
-							$hound2Role = "RightTrapper";
-							$rightTrapperAssigned = "True";
-						}
-						else if(hound3Check=="True" && $hound3Role == "")
-						{
-							$hound3Role = "RightTrapper";
-							$rightTrapperAssigned = "True";
-						}
-					}
-					
-					if($topTrapperAssigned=="False")
-					{
-						//Check which hound is closest vertically, then assign the role
-						hound1Check = closestVertOrder(1,1);
-						hound2Check = closestVertOrder(2,1);
-						hound3Check = closestVertOrder(3,1);
-						
-						if(hound1Check=="True" && $hound1Role == "")
-						{
-							$hound1Role = "TopTrapper";
-							$topTrapperAssigned = "True";
-						}
-						else if(hound2Check=="True" && $hound2Role == "")
-						{
-							$hound1Role = "TopTrapper";
-							$topTrapperAssigned = "True";
-						}
-						else if(hound3Check=="True" && $hound3Role == "")
-						{
-							$hound1Role = "TopTrapper";
-							$topTrapperAssigned = "True";
-						}
-					}
-					//fill remaining roles	
-					if($houndsAssignedRoles < 3)
-					{
-						if($hound1Role=="")
-						{
-							if($bottomTrapperAssigned=="False")
-							{
-								$hound1Role="BottomTrapper";
-							}
-							else if($rightTrapperAssigned=="False")
-							{
-								$hound1Role="RightTrapper";
-							}
-							else if($topTrapperAssigned=="False")
-							{
-								$hound1Role="TopTrapper";
-							}
-						}
-						
-						if($hound2Role=="")
-						{
-							if($bottomTrapperAssigned=="False")
-							{
-								$hound2Role="BottomTrapper";
-							}
-							else if($rightTrapperAssigned=="False")
-							{
-								$hound2Role="RightTrapper";
-							}
-							else if($topTrapperAssigned=="False")
-							{
-								$hound2Role="TopTrapper";
-							}
-						}
-						
-						if($hound3Role=="")
-						{
-							if($bottomTrapperAssigned=="False")
-							{
-								$hound3Role="BottomTrapper";
-							}
-							else if($rightTrapperAssigned=="False")
-							{
-								$hound3Role="RightTrapper";
-							}
-							else if($topTrapperAssigned=="False")
-							{
-								$hound3Role="TopTrapper";
-							}
-						}
-					}
-					break;	
-					
-				//Trap Right---------------------	
-				case "TrapRight":
-					if($bottomTrapperAssigned=="False")
-					{
-						//Check which hound is closest horizontally, then assign the role
-						hound1Check = closestHorizOrder(1,1);
-						hound2Check = closestHorizOrder(2,1);
-						hound3Check = closestHorizOrder(3,1);
-						
-						if(hound1Check=="True" && $hound1Role == "")
-						{
-							$hound1Role = "BottomTrapper";
-							$bottomTrapperAssigned = "True";
-						}
-						else if(hound2Check=="True" && $hound2Role == "")
-						{
-							$hound2Role = "BottomTrapper";
-							$bottomTrapperAssigned = "True";
-						}
-						else if(hound3Check=="True" && $hound3Role == "")
-						{
-							$hound3Role = "BottomTrapper";
-							$bottomTrapperAssigned = "True";
-						}
-					}
-					
-					if($leftTrapperAssigned=="False")
-					{
-						//Check which hound is closest horizontally, then assign the role
-						hound1Check = closestHorizOrder(1,1);
-						hound2Check = closestHorizOrder(2,1);
-						hound3Check = closestHorizOrder(3,1);
-						
-						if(hound1Check=="True" && $hound1Role == "")
-						{
-							$hound1Role = "LeftTrapper";
-							$leftTrapperAssigned = "True";
-						}
-						else if(hound2Check=="True" && $hound2Role == "")
-						{
-							$hound2Role = "LeftTrapper";
-							$leftTrapperAssigned = "True";
-						}
-						else if(hound3Check=="True" && $hound3Role == "")
-						{
-							$hound3Role = "LeftTrapper";
-							$leftTrapperAssigned = "True";
-						}
-					}
-					
-					if($topTrapperAssigned=="False")
-					{
-						//Check which hound is closest vertically, then assign the role
-						hound1Check = closestVertOrder(1,1);
-						hound2Check = closestVertOrder(2,1);
-						hound3Check = closestVertOrder(3,1);
-						
-						if(hound1Check=="True" && $hound1Role == "")
-						{
-							$hound1Role = "TopTrapper";
-							$topTrapperAssigned = "True";
-						}
-						else if(hound2Check=="True" && $hound2Role == "")
-						{
-							$hound1Role = "TopTrapper";
-							$topTrapperAssigned = "True";
-						}
-						else if(hound3Check=="True" && $hound3Role == "")
-						{
-							$hound1Role = "TopTrapper";
-							$topTrapperAssigned = "True";
-						}
-					}
-					//fill remaining roles	
-					if($houndsAssignedRoles < 3)
-					{
-						if($hound1Role=="")
-						{
-							if($bottomTrapperAssigned=="False")
-							{
-								$hound1Role="BottomTrapper";
-							}
-							else if($leftTrapperAssigned=="False")
-							{
-								$hound1Role="LeftTrapper";
-							}
-							else if($topTrapperAssigned=="False")
-							{
-								$hound1Role="TopTrapper";
-							}
-						}
-						
-						if($hound2Role=="")
-						{
-							if($bottomTrapperAssigned=="False")
-							{
-								$hound2Role="BottomTrapper";
-							}
-							else if($leftTrapperAssigned=="False")
-							{
-								$hound2Role="LeftTrapper";
-							}
-							else if($topTrapperAssigned=="False")
-							{
-								$hound2Role="TopTrapper";
-							}
-						}
-						
-						if($hound3Role=="")
-						{
-							if($bottomTrapperAssigned=="False")
-							{
-								$hound3Role="BottomTrapper";
-							}
-							else if($leftTrapperAssigned=="False")
-							{
-								$hound3Role="LeftTrapper";
-							}
-							else if($topTrapperAssigned=="False")
-							{
-								$hound3Role="TopTrapper";
-							}
-						}
-					}
-					break;	
-					
-				default:
-					break;
-			}
-			
-		};//fill rolls
-		
-		
-		
-		
-		fillRoles($strategy);
-		
-		
-		
-		console.log("Hound1=" + $hound1Role + ", Hound2=" + $hound2Role + ", Hound3=" + $hound3Role);
-	};	//Assign roles
-		
+		};
+	
+	
+	
 });
 	
 	</script>
