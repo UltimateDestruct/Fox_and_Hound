@@ -122,7 +122,9 @@
 						determineTouchingTrappers($fox_x,$fox_y+1,"TopTrapper");
 						determineTouchingTrappers($fox_x,$fox_y-1,"BottomTrapper");
 						
-						decideHoundTile(1,$hound1Role);
+						decideHoundTile(1,$hound1Role,$hound1_x,$hound1_y);
+						decideHoundTile(2,$hound2Role,$hound2_x,$hound2_y);
+						decideHoundTile(3,$hound3Role,$hound3_x,$hound3_y);
 						
 						//Need to determine if a hound is touching the fox after the hound moves
 						determineTouchingTrappers($fox_x+1,$fox_y,"LeftTrapper");
@@ -269,8 +271,23 @@
 			if($hound1_x == ParamX && $hound1_y == ParamY)
 			{
 				$hound1Role = trapperType;
-				
-				switch ($hound1Role){
+				assignTouchingTrappers($hound1Role);
+			}
+			else if($hound2_x == ParamX && $hound2_y == ParamY)
+			{
+				$hound2Role = trapperType;
+				assignTouchingTrappers($hound2Role);
+			}
+			else if($hound3_x == ParamX && $hound3_y == ParamY)
+			{
+				$hound3Role = trapperType;
+				assignTouchingTrappers($hound3Role);
+			}
+		};
+		
+		function assignTouchingTrappers(houndRole)
+		{
+			switch (houndRole){
 				case "LeftTrapper":
 					$leftTrapperAssigned = "True";
 					console.log("Left trapper assigned!");
@@ -289,7 +306,6 @@
 					break;
 				default:
 					break;
-				}
 			}
 		};
 		
@@ -298,10 +314,10 @@
 	//----------------------------------
 	function checkHoundMoveAvailability(HoundNum, ParamX, ParamY)
 	{
+		//hound1
 		if(HoundNum==1)
 		{
 			//Check if the hound is within range to move to the new square
-			
 			if((ParamX==$hound1_x || ParamX==$hound1_x+1 || ParamX==$hound1_x-1) && (ParamY==$hound1_y || ParamY==$hound1_y-1 || ParamY==$hound1_y+1))
 			{
 				//Check that the hound will not move past the edges of the board
@@ -310,6 +326,54 @@
 					//Check that there are no other players occupying the tile
 					if((ParamX == $hound2_x && ParamY == $hound2_y)
 					|| (ParamX == $hound3_x && ParamY == $hound3_y)
+					|| (ParamX == $fox_x && ParamY == $fox_y))
+					{
+						return "False";
+					}
+					else
+					{
+						return "True";
+					}
+				}
+			}
+		}
+		
+		//hound2
+		else if(HoundNum==2)
+		{
+			//Check if the hound is within range to move to the new square
+			if((ParamX==$hound2_x || ParamX==$hound2_x+1 || ParamX==$hound2_x-1) && (ParamY==$hound2_y || ParamY==$hound2_y-1 || ParamY==$hound2_y+1))
+			{
+				//Check that the hound will not move past the edges of the board
+				if((ParamX >= 0 && ParamX < $maxBoardWidth) && (ParamY >= 0 && ParamY < $maxBoardHeight))
+				{
+					//Check that there are no other players occupying the tile
+					if((ParamX == $hound1_x && ParamY == $hound1_y)
+					|| (ParamX == $hound3_x && ParamY == $hound3_y)
+					|| (ParamX == $fox_x && ParamY == $fox_y))
+					{
+						return "False";
+					}
+					else
+					{
+						return "True";
+					}
+				}
+			}
+		}
+		
+		//hound3
+		else if(HoundNum==3)
+		{
+			//Check if the hound is within range to move to the new square
+			if((ParamX==$hound3_x || ParamX==$hound3_x+1 || ParamX==$hound3_x-1) && (ParamY==$hound3_y || ParamY==$hound3_y-1 || ParamY==$hound3_y+1))
+			{
+				//Check that the hound will not move past the edges of the board
+				if((ParamX >= 0 && ParamX < $maxBoardWidth) && (ParamY >= 0 && ParamY < $maxBoardHeight))
+				{
+					//Check that there are no other players occupying the tile
+					if((ParamX == $hound1_x && ParamY == $hound1_y)
+					|| (ParamX == $hound2_x && ParamY == $hound2_y)
 					|| (ParamX == $fox_x && ParamY == $fox_y))
 					{
 						return "False";
@@ -339,6 +403,26 @@
 			$hound1_y = ParamY;
 			$hound1Role="";
 		}
+		else if(HoundNum==2)
+		{
+			$houndLocationX = $hound2_x;
+			$houndLocationY = $hound2_y;
+			
+			//Change location of Hound2
+			$hound2_x = ParamX;
+			$hound2_y = ParamY;
+			$hound2Role="";
+		}
+		else if(HoundNum==3)
+		{
+			$houndLocationX = $hound3_x;
+			$houndLocationY = $hound3_y;
+			
+			//Change location of Hound2
+			$hound3_x = ParamX;
+			$hound3_y = ParamY;
+			$hound3Role="";
+		}
 		
 		//Remove blue from the hound's current tile
 		$("#tileX" + $houndLocationX + "Y" + $houndLocationY).removeClass("houndButton");
@@ -350,59 +434,37 @@
 	//--------------------------------------------
 		// Decide Hound Tile
 		//--------------------------------------------
-		function decideHoundTile(houndNumber,houndRole)
+		function decideHoundTile(houndNumber,houndRole,houndX,houndY)
 		{
-			switch (houndNumber)
+			switch(houndRole)
 			{
-				case 1:
-					switch(houndRole)
+				case "RightTrapper":
+					if(checkHoundMoveAvailability(houndNumber,houndX+1,houndY) == "True")
 					{
-						case "RightTrapper":
-							if(checkHoundMoveAvailability(1,$hound1_x+1,$hound1_y) == "True")
-							{
-								moveHound(1,$hound1_x+1,$hound1_y);
-							}
-							else
-							{
-								//console.log("Don't Move Hound1 Left");
-							}
-							break;
-						case "LeftTrapper":
-							if(checkHoundMoveAvailability(1,$hound1_x-1,$hound1_y) == "True")
-							{
-								moveHound(1,$hound1_x-1,$hound1_y);
-							}
-							else
-							{
-								//console.log("Don't Move Hound1 Right");
-							}
-							break;
-						case "BottomTrapper":
-							if(checkHoundMoveAvailability(1,$hound1_x,$hound1_y+1) == "True")
-							{
-								moveHound(1,$hound1_x,$hound1_y+1);
-							}
-							else
-							{
-								//console.log("Don't Move Hound1 Up");
-							}
-							break;
-						case "TopTrapper":
-							if(checkHoundMoveAvailability(1,$hound1_x,$hound1_y-1) == "True")
-							{
-								moveHound(1,$hound1_x,$hound1_y-1);
-							}
-							else
-							{
-								//console.log("Don't Move Hound1 Down");
-							}
-							break;
-						default:
-							console.log("No role assigned to Hound1");
-							break; 
+						moveHound(houndNumber,houndX+1,houndY);
 					}
-				default:
 					break;
+				case "LeftTrapper":
+					if(checkHoundMoveAvailability(houndNumber,houndX-1,houndY) == "True")
+					{
+						moveHound(houndNumber,houndX-1,houndY);
+					}
+					break;
+				case "BottomTrapper":
+					if(checkHoundMoveAvailability(houndNumber,houndX,houndY+1) == "True")
+					{
+						moveHound(houndNumber,houndX,houndY+1);
+					}
+					break;
+				case "TopTrapper":
+					if(checkHoundMoveAvailability(houndNumber,houndX,houndY-1) == "True")
+					{
+						moveHound(houndNumber,houndX,houndY-1);
+					}
+					break;
+				default:
+					console.log("No role assigned to Hound" + houndNumber);
+					break; 
 			}
 		};
 	
