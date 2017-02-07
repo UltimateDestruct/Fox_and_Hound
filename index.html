@@ -19,6 +19,7 @@
 		var $user_clicked_x, $user_clicked_y;
 		var $hound1Role="",$hound2Role="",$hound3Role="";
 		var $strategy="";
+		var $rightTrapperAssigned="False",$leftTrapperAssigned="False",$topTrapperAssigned="False",$bottomTrapperAssigned="False";
 	
 		//-------------------
 		// Set up board
@@ -117,27 +118,34 @@
 						developStrategy();
 						
 						//Need to determine if a hound is touching the fox before the hound moves
-						determineTouchingTrappers($fox_x+1,$fox_y,"LeftTrapper");
-						determineTouchingTrappers($fox_x-1,$fox_y,"RightTrapper");
-						determineTouchingTrappers($fox_x,$fox_y+1,"TopTrapper");
-						determineTouchingTrappers($fox_x,$fox_y-1,"BottomTrapper");
+						determineTouchingTrappers($fox_x-1,$fox_y,"LeftTrapper");
+						determineTouchingTrappers($fox_x+1,$fox_y,"RightTrapper");
+						determineTouchingTrappers($fox_x,$fox_y-1,"TopTrapper");
+						determineTouchingTrappers($fox_x,$fox_y+1,"BottomTrapper");
 						
-						decideHoundTile(1,$hound1Role,$hound1_x,$hound1_y);
-						decideHoundTile(2,$hound2Role,$hound2_x,$hound2_y);
-						decideHoundTile(3,$hound3Role,$hound3_x,$hound3_y);
-						
-						//Need to determine if a hound is touching the fox after the hound moves
-						determineTouchingTrappers($fox_x+1,$fox_y,"LeftTrapper");
-						determineTouchingTrappers($fox_x-1,$fox_y,"RightTrapper");
-						determineTouchingTrappers($fox_x,$fox_y+1,"TopTrapper");
-						determineTouchingTrappers($fox_x,$fox_y-1,"BottomTrapper");
-						
-						checkForFoxValidMoves();
+						//Decide what to do if a hound isn't touching the fox
+						decideRole(1,$strategy);
+						decideRole(2,$strategy);
+						decideRole(3,$strategy);
 						
 						console.log("Hound1 Role:" + $hound1Role + "," + "Hound2 Role:" + $hound2Role + "," + "Hound3 Role:" + $hound3Role);
 						console.log("Hound1:" + $hound1_x + "," + $hound1_y);
 						console.log("Hound2:" + $hound2_x + "," + $hound2_y);
 						console.log("Hound3:" + $hound3_x + "," + $hound3_y);
+						
+						decideHoundTile(1,$hound1Role,$hound1_x,$hound1_y);
+						decideHoundTile(2,$hound2Role,$hound2_x,$hound2_y);
+						decideHoundTile(3,$hound3Role,$hound3_x,$hound3_y);
+						
+						resetStrategy();
+						
+						//Need to determine if a hound is touching the fox after the hound moves
+						determineTouchingTrappers($fox_x-1,$fox_y,"LeftTrapper");
+						determineTouchingTrappers($fox_x+1,$fox_y,"RightTrapper");
+						determineTouchingTrappers($fox_x,$fox_y-1,"TopTrapper");
+						determineTouchingTrappers($fox_x,$fox_y+1,"BottomTrapper");
+						
+						checkForFoxValidMoves();
 				}
 				
 			});
@@ -180,7 +188,7 @@
 				//console.log("Can move down");
 				moveFox("Down");
 			}
-			//If the fox is blocked on all sides then the game is overflow
+			//If the fox is blocked on all sides then the game is over
 			if(($fox_x-1<0 || ($fox_x-1 == $hound1_x && $fox_y == $hound1_y) || ($fox_x-1 == $hound2_x && $fox_y == $hound2_y) || ($fox_x-1 == $hound3_x && $fox_y == $hound3_y)) && //left side
 			($fox_x+1>=($maxBoardWidth) || ($fox_x+1 == $hound1_x && $fox_y == $hound1_y) || ($fox_x+1 == $hound2_x && $fox_y == $hound2_y) || ($fox_x+1 == $hound3_x && $fox_y == $hound3_y)) && //right side
 			($fox_y-1<0 || ($fox_x == $hound1_x && $fox_y-1 == $hound1_y) || ($fox_x == $hound2_x && $fox_y-1 == $hound2_y) || ($fox_x == $hound3_x && $fox_y-1 == $hound3_y)) && //top side
@@ -290,19 +298,19 @@
 			switch (houndRole){
 				case "LeftTrapper":
 					$leftTrapperAssigned = "True";
-					console.log("Left trapper assigned!");
+					//console.log("Left trapper assigned!");
 					break;
 				case "RightTrapper":
 					$rightTrapperAssigned = "True";
-					console.log("Right trapper assigned!");
+					//console.log("Right trapper assigned!");
 					break;
 				case "TopTrapper":
 					$topTrapperAssigned = "True";
-					console.log("Top trapper assigned!");
+					//console.log("Top trapper assigned!");
 					break;
 				case "BottomTrapper":
 					$bottomTrapperAssigned = "True";
-					console.log("Bottom trapper assigned!");
+					//console.log("Bottom trapper assigned!");
 					break;
 				default:
 					break;
@@ -439,38 +447,555 @@
 			switch(houndRole)
 			{
 				case "RightTrapper":
-					if(checkHoundMoveAvailability(houndNumber,houndX+1,houndY) == "True")
-					{
-						moveHound(houndNumber,houndX+1,houndY);
-					}
-					break;
-				case "LeftTrapper":
 					if(checkHoundMoveAvailability(houndNumber,houndX-1,houndY) == "True")
 					{
 						moveHound(houndNumber,houndX-1,houndY);
 					}
 					break;
-				case "BottomTrapper":
-					if(checkHoundMoveAvailability(houndNumber,houndX,houndY+1) == "True")
+				case "LeftTrapper":
+					if(checkHoundMoveAvailability(houndNumber,houndX+1,houndY) == "True")
 					{
-						moveHound(houndNumber,houndX,houndY+1);
+						moveHound(houndNumber,houndX+1,houndY);
 					}
 					break;
-				case "TopTrapper":
+				case "BottomTrapper":
 					if(checkHoundMoveAvailability(houndNumber,houndX,houndY-1) == "True")
 					{
 						moveHound(houndNumber,houndX,houndY-1);
 					}
 					break;
+				case "TopTrapper":
+					if(checkHoundMoveAvailability(houndNumber,houndX,houndY+1) == "True")
+					{
+						moveHound(houndNumber,houndX,houndY+1);
+					}
+					break;
 				default:
-					console.log("No role assigned to Hound" + houndNumber);
 					break; 
 			}
 		};
 	
+	//-------------------------------------
+	// Fill Left Trapper Role
+	//-------------------------------------
+	function fillLeftTrapperRole(houndNumber)
+	{
+		if(houndNumber == 1)
+		{
+			$hound1Role = "LeftTrapper";
+			$leftTrapperAssigned = "True";
+		}
+		else if(houndNumber == 2)
+		{
+			$hound2Role = "LeftTrapper";
+			$leftTrapperAssigned = "True";
+		}
+		else if(houndNumber == 3)
+		{
+			$hound3Role = "LeftTrapper";
+			$leftTrapperAssigned = "True";
+		}
+	};
 	
+	//-------------------------------------
+	// Fill Right Trapper Role
+	//-------------------------------------
+	function fillRightTrapperRole(houndNumber)
+	{
+		if(houndNumber == 1)
+		{
+			$hound1Role = "RightTrapper";
+			$rightTrapperAssigned = "True";
+		}
+		else if(houndNumber == 2)
+		{
+			$hound2Role = "RightTrapper";
+			$rightTrapperAssigned = "True";
+		}
+		else if(houndNumber == 3)
+		{
+			$hound3Role = "RightTrapper";
+			$rightTrapperAssigned = "True";
+		}
+	};
 	
+	//-------------------------------------
+	// Fill Top Trapper Role
+	//-------------------------------------
+	function fillTopTrapperRole(houndNumber)
+	{
+		if(houndNumber == 1)
+		{
+			$hound1Role = "TopTrapper";
+			$topTrapperAssigned = "True";
+		}
+		else if(houndNumber == 2)
+		{
+			$hound2Role = "TopTrapper";
+			$topTrapperAssigned = "True";
+		}
+		else if(houndNumber == 3)
+		{
+			$hound3Role = "TopTrapper";
+			$topTrapperAssigned = "True";
+		}
+	};
+	
+	//-------------------------------------
+	// Fill Bottom Trapper Role
+	//-------------------------------------
+	function fillBottomTrapperRole(houndNumber)
+	{
+		if(houndNumber == 1)
+		{
+			$hound1Role = "BottomTrapper";
+			$bottomTrapperAssigned = "True";
+		}
+		else if(houndNumber == 2)
+		{
+			$hound2Role = "BottomTrapper";
+			$bottomTrapperAssigned = "True";
+		}
+		else if(houndNumber == 3)
+		{
+			$hound3Role = "BottomTrapper";
+			$bottomTrapperAssigned = "True";
+		}
+	};
+
+	//----------------------------
+	// Decide Role
+	//----------------------------
+	function decideRole(houndNumber,strategy){
+		var counter=1;
+		switch(strategy)
+		{
+			//Trap Left
+			case "TrapLeft":
+				while($rightTrapperAssigned=="False" && $topTrapperAssigned=="False" && $bottomTrapperAssigned =="False" || counter < 4)
+				{	
+					if(findHoundOrderRightSide(1)==counter && $hound1Role=="" && $rightTrapperAssigned == "False")
+					{
+						fillRightTrapperRole(1);
+					}
+					if(findHoundOrderRightSide(2)==counter && $hound2Role=="" && $rightTrapperAssigned == "False")
+					{
+						fillRightTrapperRole(2);
+					}
+					if(findHoundOrderRightSide(3)==counter && $hound3Role=="" && $rightTrapperAssigned == "False")
+					{
+						fillRightTrapperRole(3);
+					}
+					
+					if(findHoundOrderTopSide(1)==counter && $hound1Role=="" && $topTrapperAssigned == "False")
+					{
+						fillTopTrapperRole(1);
+					}
+					if(findHoundOrderTopSide(2)==counter && $hound2Role=="" && $topTrapperAssigned == "False")
+					{
+						fillTopTrapperRole(2);
+					}
+					if(findHoundOrderTopSide(3)==counter && $hound3Role=="" && $topTrapperAssigned == "False")
+					{
+						fillTopTrapperRole(3);
+					}
+					
+					if(findHoundOrderBottomSide(1)==counter && $hound1Role=="" && $bottomTrapperAssigned == "False")
+					{
+						fillBottomTrapperRole(1);
+					}
+					if(findHoundOrderBottomSide(2)==counter && $hound2Role=="" && $bottomTrapperAssigned == "False")
+					{
+						fillBottomTrapperRole(2);
+					}
+					if(findHoundOrderBottomSide(3)==counter && $hound3Role=="" && $bottomTrapperAssigned == "False")
+					{
+						fillBottomTrapperRole(3);
+					}
+					
+					counter++;
+				}
+				break;
+				
+			//Trap Right
+			case "TrapRight":
+				while($leftTrapperAssigned=="False" && $topTrapperAssigned=="False" && $bottomTrapperAssigned =="False" || counter < 4)
+				{	
+					if(findHoundOrderLeftSide(1)==counter && $hound1Role=="" && $leftTrapperAssigned == "False")
+					{
+						fillLeftTrapperRole(1);
+					}
+					if(findHoundOrderLeftSide(2)==counter && $hound2Role=="" && $leftTrapperAssigned == "False")
+					{
+						fillLeftTrapperRole(2);
+					}
+					if(findHoundOrderLeftSide(3)==counter && $hound3Role=="" && $leftTrapperAssigned == "False")
+					{
+						fillLeftTrapperRole(3);
+					}
+					
+					if(findHoundOrderTopSide(1)==counter && $hound1Role=="" && $topTrapperAssigned == "False")
+					{
+						fillTopTrapperRole(1);
+					}
+					if(findHoundOrderTopSide(2)==counter && $hound2Role=="" && $topTrapperAssigned == "False")
+					{
+						fillTopTrapperRole(2);
+					}
+					if(findHoundOrderTopSide(3)==counter && $hound3Role=="" && $topTrapperAssigned == "False")
+					{
+						fillTopTrapperRole(3);
+					}
+					
+					if(findHoundOrderBottomSide(1)==counter && $hound1Role=="" && $bottomTrapperAssigned == "False")
+					{
+						fillBottomTrapperRole(1);
+					}
+					if(findHoundOrderBottomSide(2)==counter && $hound2Role=="" && $bottomTrapperAssigned == "False")
+					{
+						fillBottomTrapperRole(2);
+					}
+					if(findHoundOrderBottomSide(3)==counter && $hound3Role=="" && $bottomTrapperAssigned == "False")
+					{
+						fillBottomTrapperRole(3);
+					}
+					
+					counter++;
+				}
+				break;
+				
+			//Trap Top
+			case "TrapTop":
+				while($leftTrapperAssigned=="False" && $rightTrapperAssigned=="False" && $bottomTrapperAssigned =="False" || counter < 4)
+				{	
+					if(findHoundOrderLeftSide(1)==counter && $hound1Role=="" && $leftTrapperAssigned == "False")
+					{
+						fillLeftTrapperRole(1);
+					}
+					if(findHoundOrderLeftSide(2)==counter && $hound2Role=="" && $leftTrapperAssigned == "False")
+					{
+						fillLeftTrapperRole(2);
+					}
+					if(findHoundOrderLeftSide(3)==counter && $hound3Role=="" && $leftTrapperAssigned == "False")
+					{
+						fillLeftTrapperRole(3);
+					}
+					
+					if(findHoundOrderRightSide(1)==counter && $hound1Role=="" && $rightTrapperAssigned == "False")
+					{
+						fillRightTrapperRole(1);
+					}
+					if(findHoundOrderRightSide(2)==counter && $hound2Role=="" && $rightTrapperAssigned == "False")
+					{
+						fillRightTrapperRole(2);
+					}
+					if(findHoundOrderRightSide(3)==counter && $hound3Role=="" && $rightTrapperAssigned == "False")
+					{
+						fillRightTrapperRole(3);
+					}
+					
+					if(findHoundOrderBottomSide(1)==counter && $hound1Role=="" && $bottomTrapperAssigned == "False")
+					{
+						fillBottomTrapperRole(1);
+					}
+					if(findHoundOrderBottomSide(2)==counter && $hound2Role=="" && $bottomTrapperAssigned == "False")
+					{
+						fillBottomTrapperRole(2);
+					}
+					if(findHoundOrderBottomSide(3)==counter && $hound3Role=="" && $bottomTrapperAssigned == "False")
+					{
+						fillBottomTrapperRole(3);
+					}
+					
+					counter++;
+				}
+				break;	
+				
+			//Trap Bottom
+			case "TrapBottom":
+				while($leftTrapperAssigned=="False" && $rightTrapperAssigned=="False" && $topTrapperAssigned =="False" || counter < 4)
+				{	
+					if(findHoundOrderLeftSide(1)==counter && $hound1Role=="" && $leftTrapperAssigned == "False")
+					{
+						fillLeftTrapperRole(1);
+					}
+					if(findHoundOrderLeftSide(2)==counter && $hound2Role=="" && $leftTrapperAssigned == "False")
+					{
+						fillLeftTrapperRole(2);
+					}
+					if(findHoundOrderLeftSide(3)==counter && $hound3Role=="" && $leftTrapperAssigned == "False")
+					{
+						fillLeftTrapperRole(3);
+					}
+					
+					if(findHoundOrderRightSide(1)==counter && $hound1Role=="" && $rightTrapperAssigned == "False")
+					{
+						fillRightTrapperRole(1);
+					}
+					if(findHoundOrderRightSide(2)==counter && $hound2Role=="" && $rightTrapperAssigned == "False")
+					{
+						fillRightTrapperRole(2);
+					}
+					if(findHoundOrderRightSide(3)==counter && $hound3Role=="" && $rightTrapperAssigned == "False")
+					{
+						fillRightTrapperRole(3);
+					}
+					
+					if(findHoundOrderTopSide(1)==counter && $hound1Role=="" && $topTrapperAssigned == "False")
+					{
+						fillTopTrapperRole(1);
+					}
+					if(findHoundOrderTopSide(2)==counter && $hound2Role=="" && $topTrapperAssigned == "False")
+					{
+						fillTopTrapperRole(2);
+					}
+					if(findHoundOrderTopSide(3)==counter && $hound3Role=="" && $topTrapperAssigned == "False")
+					{
+						fillTopTrapperRole(3);
+					}
+					
+					counter++;
+				}
+				break;	
+		}
+	};
+	
+	//-----------------------------------------
+	// Find Hound Order Right Side
+	//-----------------------------------------
+	function findHoundOrderRightSide(houndNumber){
+		var $orderCounter=1;
+		
+		switch(houndNumber)
+		{
+			case 1:
+				if(($fox_x - $hound1_x) < ($fox_x - $hound2_x))
+				{
+					$orderCounter++;
+				}
+				if(($fox_x - $hound1_x) < ($fox_x - $hound3_x))
+				{
+					$orderCounter++;
+				}
+				return $orderCounter;
+				break;
+			case 2:
+				if(($fox_x - $hound2_x) < ($fox_x - $hound1_x))
+				{
+					$orderCounter++;
+				}
+				if(($fox_x - $hound2_x) < ($fox_x - $hound3_x))
+				{
+					$orderCounter++;
+				}
+				return $orderCounter;
+				break;
+			case 3:
+				if(($fox_x - $hound3_x) < ($fox_x - $hound1_x))
+				{
+					$orderCounter++;
+				}
+				if(($fox_x - $hound3_x) < ($fox_x - $hound2_x))
+				{
+					$orderCounter++;
+				}
+				return $orderCounter;
+				break;
+		}
+	};
+	
+	//-----------------------------------------
+	// Find Hound Order Left Side
+	//-----------------------------------------
+	function findHoundOrderLeftSide(houndNumber){
+		var $orderCounter=1;
+		
+		switch(houndNumber)
+		{
+			case 1:
+				if(($fox_x - $hound1_x) > ($fox_x - $hound2_x))
+				{
+					$orderCounter++;
+				}
+				if(($fox_x - $hound1_x) > ($fox_x - $hound3_x))
+				{
+					$orderCounter++;
+				}
+				return $orderCounter;
+				break;
+			case 2:
+				if(($fox_x - $hound2_x) > ($fox_x - $hound1_x))
+				{
+					$orderCounter++;
+				}
+				if(($fox_x - $hound2_x) > ($fox_x - $hound3_x))
+				{
+					$orderCounter++;
+				}
+				return $orderCounter;
+				break;
+			case 3:
+				if(($fox_x - $hound3_x) < ($fox_x - $hound1_x))
+				{
+					$orderCounter++;
+				}
+				if(($fox_x - $hound3_x) < ($fox_x - $hound2_x))
+				{
+					$orderCounter++;
+				}
+				return $orderCounter;
+				break;
+		}
+	};
+	
+	//-----------------------------------------
+	// Find Hound Order Top Side
+	//-----------------------------------------
+	function findHoundOrderTopSide(houndNumber){
+		var $orderCounter=1;
+		
+		switch(houndNumber)
+		{
+			case 1:
+				if(($fox_y - $hound1_y) > ($fox_y - $hound2_y))
+				{
+					$orderCounter++;
+				}
+				if(($fox_y - $hound1_y) > ($fox_y - $hound3_y))
+				{
+					$orderCounter++;
+				}
+				return $orderCounter;
+				break;
+			case 2:
+				if(($fox_y - $hound2_x) > ($fox_y - $hound1_x))
+				{
+					$orderCounter++;
+				}
+				if(($fox_y - $hound2_x) > ($fox_y - $hound3_x))
+				{
+					$orderCounter++;
+				}
+				return $orderCounter;
+				break;
+			case 3:
+				if(($fox_y - $hound3_x) > ($fox_y - $hound1_x))
+				{
+					$orderCounter++;
+				}
+				if(($fox_y - $hound3_x) > ($fox_y - $hound2_x))
+				{
+					$orderCounter++;
+				}
+				return $orderCounter;
+				break;
+		}
+	};
+	
+	//-----------------------------------------
+	// Find Hound Order Bottom Side
+	//-----------------------------------------
+	function findHoundOrderBottomSide(houndNumber){
+		var $orderCounter=1;
+		
+		switch(houndNumber)
+		{
+			case 1:
+				if(($fox_y - $hound1_y) < ($fox_y - $hound2_y))
+				{
+					$orderCounter++;
+				}
+				if(($fox_y - $hound1_y) < ($fox_y - $hound3_y))
+				{
+					$orderCounter++;
+				}
+				return $orderCounter;
+				break;
+			case 2:
+				if(($fox_y - $hound2_x) < ($fox_y - $hound1_x))
+				{
+					$orderCounter++;
+				}
+				if(($fox_y - $hound2_x) < ($fox_y - $hound3_x))
+				{
+					$orderCounter++;
+				}
+				return $orderCounter;
+				break;
+			case 3:
+				if(($fox_y - $hound3_x) < ($fox_y - $hound1_x))
+				{
+					$orderCounter++;
+				}
+				if(($fox_y - $hound3_x) < ($fox_y - $hound2_x))
+				{
+					$orderCounter++;
+				}
+				return $orderCounter;
+				break;
+		}
+	};
+	
+	//---------------------------
+	// Horizontal Hound Order
+	//---------------------------
+	function findHorizHoundOrder(houndNumber){
+	
+		var $orderCounter=1;
+		
+		switch(houndNumber)
+		{
+			case 1:
+				if(Math.abs($fox_x - $hound1_x) > Math.abs($fox_x - $hound2_x))
+				{
+					$orderCounter++;
+				}
+				if(Math.abs($fox_x - $hound1_x) > Math.abs($fox_x - $hound3_x))
+				{
+					$orderCounter++;
+				}
+				return $orderCounter;
+				break;
+		}
+	};
+	
+	//---------------------------
+	// Vertical Hound Order
+	//---------------------------
+	function findVertHoundOrder(houndNumber){
+	
+		var $orderCounter=1;
+		
+		switch(houndNumber)
+		{
+			case 1:
+				if(Math.abs($fox_y - $hound1_y) > Math.abs($fox_y - $hound2_y))
+				{
+					$orderCounter++;
+				}
+				if(Math.abs($fox_y - $hound1_y) > Math.abs($fox_y - $hound3_y))
+				{
+					$orderCounter++;
+				}
+				return $orderCounter;
+				break;
+		}
+	};
+	
+	function resetStrategy(){
+		$strategy="";
+		$hound1Role="";
+		$hound2Role="";
+		$hound3Role="";
+		$hound4Role="";
+		$leftTrapperAssigned="False";
+		$rightTrapperAssigned="False";
+		$topTrapperAssigned="False";
+		$bottomTrapperAssigned="False";
+	}
 });
+
+
 	
 	</script>
 </head>
