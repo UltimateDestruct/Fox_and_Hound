@@ -1,4 +1,9 @@
-1. When setting the players, one player can overwrite another. 
+1. When moving the fox, it can move on top of a hound
+- Reproduction steps: Set up all the players, then move the fox, then try to move it on top of a hound
+- Expected result: The fox should not be able to move on top of the square that the hound is in.
+- Actual result: The fox IS able to move on top of the square that a hound is in.
+===============================
+2. When setting the players, one player can overwrite another. 
 - Reproduction steps: If I place the fox on (0,0), then I place a hound on (0,0), the fox is covered up by the hound.
 - Expected result: The program should not allow you to place one player on top of another
 - Actual result: The 2nd player covers up the first if they are placed on the same tile.
