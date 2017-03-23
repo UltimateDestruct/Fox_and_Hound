@@ -23,6 +23,7 @@
 		var $houndRole = ["","",""];
 		var $strategy="";
 		var $rightTrapperAssigned="False",$leftTrapperAssigned="False",$topTrapperAssigned="False",$bottomTrapperAssigned="False";
+		var $foxCanMove = new Array(4);
 	
 		//-------------------
 		// Set up board
@@ -36,13 +37,6 @@
 				}
 				$("#board").append("<br>");
 			}
-		
-			//Verify that the ids of the tiles are working correctly
-			/*
-			xvalue = $("#tileX" + $x + "Y" + $y).data("xCoord");
-			yvalue = $("#tileX" + $x + "Y" + $y).data("yCoord");
-			console.log("x: " + xvalue + ",y: " + yvalue);
-			*/
 		};
 		
 		setUpBoard();
@@ -72,12 +66,10 @@
 		$(".tile").each(function(index){
 			$(this).click(function(){
 			
-				//
 				$user_clicked_x = $(this).data("xCoord");
 				$user_clicked_y = $(this).data("yCoord");
 				//console.log($(this).attr('id'));
 				//console.log("x: " + $user_clicked_x + ", y: " + $user_clicked_y);
-				//
 				
 				// Set up the players
 				if($foxPlaced == "False" || $houndPlaced[0] == "False" || $houndPlaced[1] == "False" || $houndPlaced[2] == "False")
@@ -109,37 +101,28 @@
 						developStrategy();
 						
 						//Need to determine if a hound is touching the fox before the hound moves
-						determineTouchingTrappers($fox_x-1,$fox_y,"LeftTrapper");
-						determineTouchingTrappers($fox_x+1,$fox_y,"RightTrapper");
-						determineTouchingTrappers($fox_x,$fox_y-1,"TopTrapper");
-						determineTouchingTrappers($fox_x,$fox_y+1,"BottomTrapper");
+						determineTouchingTrappers($fox_x-1,$fox_y,"Left");
+						determineTouchingTrappers($fox_x+1,$fox_y,"Right");
+						determineTouchingTrappers($fox_x,$fox_y-1,"Top");
+						determineTouchingTrappers($fox_x,$fox_y+1,"Bottom");
 						
 						//Decide what to do if a hound isn't touching the fox
 						decideRole(0,$strategy);
 						decideRole(1,$strategy);
 						decideRole(2,$strategy);
 						
-						/*console.log("Hound1 Role:" + $hound1Role + "," + "Hound2 Role:" + $hound2Role + "," + "Hound3 Role:" + $hound3Role);
-						console.log("Hound1:" + $hound1_x + "," + $hound1_y);
-						console.log("Hound2:" + $hound2_x + "," + $hound2_y);
-						console.log("Hound3:" + $hound3_x + "," + $hound3_y);*/
-						
 						for(var i=0;i<3;i++)
 						{
 							decideHoundTile(i,$houndRole[i],$hound_x[i],$hound_y[i]);
 						};
 						
-						/*decideHoundTile(1,$hound1Role,$hound1_x,$hound1_y);
-						decideHoundTile(2,$hound2Role,$hound2_x,$hound2_y);
-						decideHoundTile(3,$hound3Role,$hound3_x,$hound3_y);*/
-						
 						resetStrategy();
 						
 						//Need to determine if a hound is touching the fox after the hound moves
-						determineTouchingTrappers($fox_x-1,$fox_y,"LeftTrapper");
-						determineTouchingTrappers($fox_x+1,$fox_y,"RightTrapper");
-						determineTouchingTrappers($fox_x,$fox_y-1,"TopTrapper");
-						determineTouchingTrappers($fox_x,$fox_y+1,"BottomTrapper");
+						determineTouchingTrappers($fox_x-1,$fox_y,"Left");
+						determineTouchingTrappers($fox_x+1,$fox_y,"Right");
+						determineTouchingTrappers($fox_x,$fox_y-1,"Top");
+						determineTouchingTrappers($fox_x,$fox_y+1,"Bottom");
 						
 						checkForFoxValidMoves();
 				}
@@ -154,40 +137,56 @@
 				//If the fox is not blocked by a hound or the edge then it can move left
 				if($fox_x-1>=0 && ($fox_x-1 != $hound_x[i] || $fox_y != $hound_y[i]))
 				{
-					//console.log("Can move left");
+					$foxCanMove[0] = "Left";
 					moveFox("Left");
-				}				
+					console.log("Left");
+				}
+				else{
+					$foxCanMove[0] = "";
+				}
 				
 				//If the fox is not blocked by a hound or the edge then it can move right
 				if($fox_x+1<($maxBoardWidth) && ($fox_x+1 != $hound_x[i] || $fox_y != $hound_y[i]))
 				{
-					//console.log("Can move right");
+					$foxCanMove[1] = "Right";
 					moveFox("Right");
+					console.log("Right");
+				}
+				else{
+					$foxCanMove[1] = "";
 				}
 				
 				//If the fox is not blocked by a hound or the edge then it can move up
 				if($fox_y-1>=0 && ($fox_x != $hound_x[i] || $fox_y-1 != $hound_y[i]))
 				{
-					//console.log("Can move up");
+					$foxCanMove[2] = "Up";
 					moveFox("Up");
+					console.log("Up");
+				}
+				else{
+					$foxCanMove[2] = "";
 				}
 				
-				//If the fox is not blocked by a hound or the edge then it can move down
+				//If the fox is not blocked by a hound or the edge then it can move do
 				if($fox_y+1<($maxBoardHeight) && ($fox_x != $hound_x[i] || $fox_y+1 != $hound_y[i]))
 				{
-					//console.log("Can move down");
+					$foxCanMove[3] = "Down";
 					moveFox("Down");
+					console.log("Down");
 				}
+				else{
+					$foxCanMove[3] = "";
+				}
+				
+				//If the fox is blocked on all sides then the game is over
+				if($foxCanMove[0] == "" && $foxCanMove[1] == "" && $foxCanMove[2] == "" && $foxCanMove[3] == "")
+				{
+					alert("game over");
+				}
+				
+				console.log("0: " + $foxCanMove[0] + ", 1: " + $foxCanMove[1] + ", 2: " + $foxCanMove[2] + ", 3: " + $foxCanMove[3]);
 			}
 			
-			//If the fox is blocked on all sides then the game is over
-			if(($fox_x-1<0 || ($fox_x-1 == $hound_x[0] && $fox_y == $hound_y[0]) || ($fox_x-1 == $hound_x[1] && $fox_y == $hound_y[1]) || ($fox_x-1 == $hound_x[2] && $fox_y == $hound_y[2])) && //left side
-			($fox_x+1>=($maxBoardWidth) || ($fox_x+1 == $hound_x[0] && $fox_y == $hound_y[0]) || ($fox_x+1 == $hound_x[1] && $fox_y == $hound_y[1]) || ($fox_x+1 == $hound_x[2] && $fox_y == $hound_y[2])) && //right side
-			($fox_y-1<0 || ($fox_x == $hound_x[0] && $fox_y-1 == $hound_y[0]) || ($fox_x == $hound_x[1] && $fox_y-1 == $hound_y[1]) || ($fox_x == $hound_x[2] && $fox_y-1 == $hound_y[2])) && //top side
-			($fox_y+1>=($maxBoardHeight) || ($fox_x == $hound_x[0] && $fox_y+1 == $hound_y[0]) || ($fox_x == $hound_x[1] && $fox_y+1 == $hound_y[1]) || ($fox_x == $hound_x[2] && $fox_y+1 == $hound_y[2]))) //bottom side
-			{
-				alert("game over");
-			}
 		};
 		
 		function moveFox(direction){
@@ -273,8 +272,7 @@
 			{
 				if($hound_x[i] == ParamX && $hound_y[i] == ParamY)
 				{
-					$houndRole[i] = trapperType;
-					assignTouchingTrappers($houndRole[i]);
+					assignTouchingTrappers(trapperType);
 				}
 			}
 		};
@@ -433,43 +431,19 @@
 			case "TrapLeft":
 				while($rightTrapperAssigned=="False" && $topTrapperAssigned=="False" && $bottomTrapperAssigned =="False" || counter < 3)
 				{	
-					if(findHoundOrderRightSide(0)==counter && $houndRole[0]=="" && $rightTrapperAssigned == "False")
+					if(findHoundOrderRightSide(houndNumber)==counter && $houndRole[houndNumber]=="" && $rightTrapperAssigned == "False")
 					{
-						fillRightTrapperRole(0);
-					}
-					if(findHoundOrderRightSide(1)==counter && $houndRole[1]=="" && $rightTrapperAssigned == "False")
-					{
-						fillRightTrapperRole(1);
-					}
-					if(findHoundOrderRightSide(2)==counter && $houndRole[2]=="" && $rightTrapperAssigned == "False")
-					{
-						fillRightTrapperRole(2);
+						fillRightTrapperRole(houndNumber);
 					}
 					
-					if(findHoundOrderTopSide(0)==counter && $houndRole[0]=="" && $topTrapperAssigned == "False")
+					if(findHoundOrderTopSide(houndNumber)==counter && $houndRole[houndNumber]=="" && $topTrapperAssigned == "False")
 					{
-						fillTopTrapperRole(0);
-					}
-					if(findHoundOrderTopSide(1)==counter && $houndRole[1]=="" && $topTrapperAssigned == "False")
-					{
-						fillTopTrapperRole(1);
-					}
-					if(findHoundOrderTopSide(2)==counter && $houndRole[2]=="" && $topTrapperAssigned == "False")
-					{
-						fillTopTrapperRole(2);
+						fillTopTrapperRole(houndNumber);
 					}
 					
-					if(findHoundOrderBottomSide(0)==counter && $houndRole[0]=="" && $bottomTrapperAssigned == "False")
+					if(findHoundOrderBottomSide(houndNumber)==counter && $houndRole[houndNumber]=="" && $bottomTrapperAssigned == "False")
 					{
-						fillBottomTrapperRole(0);
-					}
-					if(findHoundOrderBottomSide(1)==counter && $houndRole[1]=="" && $bottomTrapperAssigned == "False")
-					{
-						fillBottomTrapperRole(1);
-					}
-					if(findHoundOrderBottomSide(2)==counter && $houndRole[2]=="" && $bottomTrapperAssigned == "False")
-					{
-						fillBottomTrapperRole(2);
+						fillBottomTrapperRole(houndNumber);
 					}
 					
 					counter++;
@@ -478,45 +452,21 @@
 				
 			//Trap Right
 			case "TrapRight":
-				while($leftTrapperAssigned=="False" && $topTrapperAssigned=="False" && $bottomTrapperAssigned =="False" || counter < 4)
+				while($leftTrapperAssigned=="False" && $topTrapperAssigned=="False" && $bottomTrapperAssigned =="False" || counter < 3)
 				{	
-					if(findHoundOrderLeftSide(0)==counter && $houndRole[0]=="" && $leftTrapperAssigned == "False")
+					if(findHoundOrderLeftSide(houndNumber)==counter && $houndRole[houndNumber]=="" && $leftTrapperAssigned == "False")
 					{
-						fillLeftTrapperRole(0);
-					}
-					if(findHoundOrderLeftSide(1)==counter && $houndRole[1]=="" && $leftTrapperAssigned == "False")
-					{
-						fillLeftTrapperRole(1);
-					}
-					if(findHoundOrderLeftSide(2)==counter && $houndRole[2]=="" && $leftTrapperAssigned == "False")
-					{
-						fillLeftTrapperRole(2);
+						fillLeftTrapperRole(houndNumber);
 					}
 					
-					if(findHoundOrderTopSide(0)==counter && $houndRole[0]=="" && $topTrapperAssigned == "False")
+					if(findHoundOrderTopSide(houndNumber)==counter && $houndRole[houndNumber]=="" && $topTrapperAssigned == "False")
 					{
-						fillTopTrapperRole(0);
-					}
-					if(findHoundOrderTopSide(1)==counter && $houndRole[1]=="" && $topTrapperAssigned == "False")
-					{
-						fillTopTrapperRole(1);
-					}
-					if(findHoundOrderTopSide(2)==counter && $houndRole[2]=="" && $topTrapperAssigned == "False")
-					{
-						fillTopTrapperRole(2);
+						fillTopTrapperRole(houndNumber);
 					}
 					
-					if(findHoundOrderBottomSide(0)==counter && $houndRole[0]=="" && $bottomTrapperAssigned == "False")
+					if(findHoundOrderBottomSide(houndNumber)==counter && $houndRole[houndNumber]=="" && $bottomTrapperAssigned == "False")
 					{
-						fillBottomTrapperRole(0);
-					}
-					if(findHoundOrderBottomSide(1)==counter && $houndRole[1]=="" && $bottomTrapperAssigned == "False")
-					{
-						fillBottomTrapperRole(1);
-					}
-					if(findHoundOrderBottomSide(2)==counter && $houndRole[2]=="" && $bottomTrapperAssigned == "False")
-					{
-						fillBottomTrapperRole(2);
+						fillBottomTrapperRole(houndNumber);
 					}
 					
 					counter++;
@@ -525,45 +475,21 @@
 				
 			//Trap Top
 			case "TrapTop":
-				while($leftTrapperAssigned=="False" && $rightTrapperAssigned=="False" && $bottomTrapperAssigned =="False" || counter < 4)
+				while($leftTrapperAssigned=="False" && $rightTrapperAssigned=="False" && $bottomTrapperAssigned =="False" || counter < 3)
 				{	
-					if(findHoundOrderLeftSide(0)==counter && $houndRole[0]=="" && $leftTrapperAssigned == "False")
+					if(findHoundOrderLeftSide(houndNumber)==counter && $houndRole[houndNumber]=="" && $leftTrapperAssigned == "False")
 					{
-						fillLeftTrapperRole(0);
-					}
-					if(findHoundOrderLeftSide(1)==counter && $houndRole[1]=="" && $leftTrapperAssigned == "False")
-					{
-						fillLeftTrapperRole(1);
-					}
-					if(findHoundOrderLeftSide(2)==counter && $houndRole[2]=="" && $leftTrapperAssigned == "False")
-					{
-						fillLeftTrapperRole(2);
+						fillLeftTrapperRole(houndNumber);
 					}
 					
-					if(findHoundOrderRightSide(0)==counter && $houndRole[0]=="" && $rightTrapperAssigned == "False")
+					if(findHoundOrderRightSide(houndNumber)==counter && $houndRole[houndNumber]=="" && $rightTrapperAssigned == "False")
 					{
-						fillRightTrapperRole(0);
-					}
-					if(findHoundOrderRightSide(1)==counter && $houndRole[1]=="" && $rightTrapperAssigned == "False")
-					{
-						fillRightTrapperRole(1);
-					}
-					if(findHoundOrderRightSide(2)==counter && $houndRole[2]=="" && $rightTrapperAssigned == "False")
-					{
-						fillRightTrapperRole(2);
+						fillRightTrapperRole(houndNumber);
 					}
 					
-					if(findHoundOrderBottomSide(0)==counter && $houndRole[0]=="" && $bottomTrapperAssigned == "False")
+					if(findHoundOrderBottomSide(houndNumber)==counter && $houndRole[houndNumber]=="" && $bottomTrapperAssigned == "False")
 					{
-						fillBottomTrapperRole(0);
-					}
-					if(findHoundOrderBottomSide(1)==counter && $houndRole[1]=="" && $bottomTrapperAssigned == "False")
-					{
-						fillBottomTrapperRole(1);
-					}
-					if(findHoundOrderBottomSide(2)==counter && $houndRole[2]=="" && $bottomTrapperAssigned == "False")
-					{
-						fillBottomTrapperRole(2);
+						fillBottomTrapperRole(houndNumber);
 					}
 					
 					counter++;
@@ -572,45 +498,21 @@
 				
 			//Trap Bottom
 			case "TrapBottom":
-				while($leftTrapperAssigned=="False" && $rightTrapperAssigned=="False" && $topTrapperAssigned =="False" || counter < 4)
+				while($leftTrapperAssigned=="False" && $rightTrapperAssigned=="False" && $topTrapperAssigned =="False" || counter < 3)
 				{	
-					if(findHoundOrderLeftSide(0)==counter && $houndRole[0]=="" && $leftTrapperAssigned == "False")
+					if(findHoundOrderLeftSide(houndNumber)==counter && $houndRole[houndNumber]=="" && $leftTrapperAssigned == "False")
 					{
-						fillLeftTrapperRole(0);
-					}
-					if(findHoundOrderLeftSide(1)==counter && $houndRole[1]=="" && $leftTrapperAssigned == "False")
-					{
-						fillLeftTrapperRole(1);
-					}
-					if(findHoundOrderLeftSide(2)==counter && $houndRole[2]=="" && $leftTrapperAssigned == "False")
-					{
-						fillLeftTrapperRole(2);
+						fillLeftTrapperRole(houndNumber);
 					}
 					
-					if(findHoundOrderRightSide(0)==counter && $houndRole[0]=="" && $rightTrapperAssigned == "False")
+					if(findHoundOrderRightSide(houndNumber)==counter && $houndRole[houndNumber]=="" && $rightTrapperAssigned == "False")
 					{
-						fillRightTrapperRole(0);
-					}
-					if(findHoundOrderRightSide(1)==counter && $houndRole[1]=="" && $rightTrapperAssigned == "False")
-					{
-						fillRightTrapperRole(1);
-					}
-					if(findHoundOrderRightSide(2)==counter && $houndRole[2]=="" && $rightTrapperAssigned == "False")
-					{
-						fillRightTrapperRole(2);
+						fillRightTrapperRole(houndNumber);
 					}
 					
-					if(findHoundOrderTopSide(0)==counter && $houndRole[0]=="" && $topTrapperAssigned == "False")
+					if(findHoundOrderTopSide(houndNumber)==counter && $houndRole[houndNumber]=="" && $topTrapperAssigned == "False")
 					{
-						fillTopTrapperRole(0);
-					}
-					if(findHoundOrderTopSide(1)==counter && $houndRole[1]=="" && $topTrapperAssigned == "False")
-					{
-						fillTopTrapperRole(1);
-					}
-					if(findHoundOrderTopSide(2)==counter && $houndRole[2]=="" && $topTrapperAssigned == "False")
-					{
-						fillTopTrapperRole(2);
+						fillTopTrapperRole(houndNumber);
 					}
 					
 					counter++;
@@ -759,7 +661,7 @@
 		
 		switch(houndNumber)
 		{
-			case 1:
+			case 0:
 				if(($fox_y - $hound_y[0]) < ($fox_y - $hound_y[1]))
 				{
 					$orderCounter++;
@@ -770,7 +672,7 @@
 				}
 				return $orderCounter;
 				break;
-			case 2:
+			case 1:
 				if(($fox_y - $hound_y[1]) < ($fox_y - $hound_y[0]))
 				{
 					$orderCounter++;
@@ -781,7 +683,7 @@
 				}
 				return $orderCounter;
 				break;
-			case 3:
+			case 2:
 				if(($fox_y - $hound_y[2]) < ($fox_y - $hound_y[0]))
 				{
 					$orderCounter++;
