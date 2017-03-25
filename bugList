@@ -1,10 +1,9 @@
-1. When moving the fox, it can move on top of a hound
-- Reproduction steps: Set up all the players, then move the fox, then try to move it on top of a hound
-- Expected result: The fox should not be able to move on top of the square that the hound is in.
-- Actual result: The fox IS able to move on top of the square that a hound is in.
-===============================
-2. When setting the players, one player can overwrite another. 
-- Reproduction steps: If I place the fox on (0,0), then I place a hound on (0,0), the fox is covered up by the hound.
-- Expected result: The program should not allow you to place one player on top of another
-- Actual result: The 2nd player covers up the first if they are placed on the same tile.
-===============================
+1. Game Over message doesn't happen at end of turn
+- Reproduction Steps: Place Fox at (0,0), place Hound1 at (0,1), place Hound2 at (1,1), place Hound3 at (1,2). Then click on the Fox tile so that Hound2 moves up to (0,1).
+- Expected Result: The Game Over message should immediately display because the Fox is trapped.
+- Actual Result: The Game Over message does not happen until the beginning of the next turn - when you click again.
+================================
+2. User can click on Fox to stall movement
+- Reproduction Steps: During gameplay, click on the Fox tile
+- Expected Result: Nothing should happen, that is not considered a valid move. The design of this game demands that the fox move to a different square each turn.
+- Actual Result: The Hounds move, but the Fox stays put.
